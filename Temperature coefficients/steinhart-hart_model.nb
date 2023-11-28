@@ -1,0 +1,149 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5159,        141]
+NotebookOptionsPosition[      4680,        124]
+NotebookOutlinePosition[      5079,        140]
+CellTagsIndexPosition[      5036,        137]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"data", "=", 
+   RowBox[{
+    RowBox[{"Import", "[", 
+     RowBox[{"FileNameJoin", "[", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"NotebookDirectory", "[", "]"}], ",", 
+        "\"\<thermistor-behavior.csv\>\""}], "}"}], "]"}], "]"}], "[", 
+    RowBox[{"[", 
+     RowBox[{"2", ";;"}], "]"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"Temperature", ",", "R"}], "}"}], "=", 
+    RowBox[{"Transpose", "[", 
+     RowBox[{"data", "[", 
+      RowBox[{"[", 
+       RowBox[{"All", ",", 
+        RowBox[{"{", 
+         RowBox[{"1", ",", "2"}], "}"}]}], "]"}], "]"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]", "\n", "\n", 
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+    "Ajuste", " ", "a", " ", "la", " ", "ecuaci\[OAcute]n", " ", "de", " ", 
+     "Steinhart"}], "-", "Hart"}], "*)"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"SteinhartHartModel", "=", 
+    RowBox[{"NonlinearModelFit", "[", 
+     RowBox[{
+      RowBox[{"Transpose", "[", 
+       RowBox[{"{", 
+        RowBox[{"R", ",", 
+         RowBox[{"1", "/", 
+          RowBox[{"(", 
+           RowBox[{"Temperature", "+", "273.15"}], ")"}]}]}], "}"}], "]"}], 
+      ",", 
+      RowBox[{"a", "+", 
+       RowBox[{"b", "*", 
+        RowBox[{"Log", "[", "r", "]"}]}], "+", 
+       RowBox[{"c", "*", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"Log", "[", "r", "]"}], ")"}], "^", "3"}]}]}], ",", 
+      RowBox[{"{", 
+       RowBox[{"a", ",", "b", ",", "c"}], "}"}], ",", "r"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  RowBox[{"(*", 
+   RowBox[{"Coeficientes", " ", "del", " ", "modelo"}], 
+   "*)"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"SHCoefficients", "=", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"a", ",", "b", ",", "c"}], "}"}], "/.", " ", 
+    RowBox[{"SteinhartHartModel", "[", "\"\<BestFitParameters\>\"", "]"}]}]}],
+   ";"}], "\n", 
+ RowBox[{"Print", "[", " ", 
+  RowBox[{"\"\<A: \>\"", " ", "<>", " ", 
+   RowBox[{"ToString", "[", 
+    RowBox[{"SHCoefficients", "[", 
+     RowBox[{"[", "1", "]"}], "]"}], "]"}], " ", "<>", " ", "\"\<\\nB: \>\"", 
+   "<>", " ", 
+   RowBox[{"ToString", "[", 
+    RowBox[{"SHCoefficients", "[", 
+     RowBox[{"[", "2", "]"}], "]"}], "]"}], " ", "<>", " ", "\"\<\\nC: \>\"", 
+   " ", "<>", " ", 
+   RowBox[{"ToString", "[", 
+    RowBox[{
+     RowBox[{"SHCoefficients", "[", 
+      RowBox[{"[", "3", "]"}], "]"}], ",", "TraditionalForm"}], "]"}]}], 
+  "]"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.9099681916664076`*^9, 3.9099681916664076`*^9}, {
+   3.91000684994934*^9, 3.910007097686867*^9}, {3.9100071717378483`*^9, 
+   3.9100072019081297`*^9}, {3.9100072385681543`*^9, 3.910007400876648*^9}, {
+   3.9100074749841924`*^9, 3.910007481362668*^9}, {3.910007512667467*^9, 
+   3.910007539993315*^9}, {3.910007586782415*^9, 3.910007591646191*^9}, {
+   3.9100080576590567`*^9, 3.910008087920391*^9}, {3.9100081206466713`*^9, 
+   3.910008155214714*^9}, {3.9100082882152076`*^9, 3.9100082904198904`*^9}, {
+   3.910008380854311*^9, 3.9100084142440557`*^9}, {3.9100084573501425`*^9, 
+   3.9100084723937206`*^9}, {3.910008560510694*^9, 3.9100085996379805`*^9}, 
+   3.9100086602428894`*^9, {3.91000881614653*^9, 3.910008831933759*^9}},
+ CellLabel->"In[12]:=",ExpressionUUID->"a4d3cb96-af8e-456e-ab03-0994bf954b4e"],
+
+Cell[BoxData["\<\"A: 0.00112866\\nB: 0.00023422\\nC: \
+\\!\\(\\*FormBox[\\\"8.715896793938619`*^-8\\\", TraditionalForm]\\)\"\>"], \
+"Print",
+ CellChangeTimes->{{3.9100073692113543`*^9, 3.910007401674876*^9}, {
+   3.91000749165067*^9, 3.910007541070923*^9}, 3.910007592277832*^9, {
+   3.9100080812751007`*^9, 3.910008161534726*^9}, 3.910008196711062*^9, {
+   3.9100082639639244`*^9, 3.910008291506816*^9}, 3.9100083957557597`*^9, 
+   3.9100084747576866`*^9, 3.9100085771421766`*^9, 3.9100086619322433`*^9, 
+   3.910008764288621*^9, 3.910008816976528*^9, 3.9100088511889296`*^9},
+ CellLabel->
+  "Durante la evaluaci\[OAcute]n de \
+In[12]:=",ExpressionUUID->"1c1ec384-03dd-45ff-9515-fa7c2e082975"]
+}, Open  ]]
+},
+WindowSize->{949, 526.5},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+FrontEndVersion->"13.3 para Microsoft Windows (64-bit) (July 24, 2023)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"3db05c74-c2c4-4fca-aa54-83c1dd6d1e3d"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 3386, 86, 338, "Input",ExpressionUUID->"a4d3cb96-af8e-456e-ab03-0994bf954b4e"],
+Cell[3969, 110, 695, 11, 58, "Print",ExpressionUUID->"1c1ec384-03dd-45ff-9515-fa7c2e082975"]
+}, Open  ]]
+}
+]
+*)
+
