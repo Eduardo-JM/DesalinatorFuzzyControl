@@ -19,6 +19,7 @@ membership flow_membership;
 function_limits seawater_limits = {5, 10, 13, 20, 27, 30, 35};
 function_limits heated_seawater_limits = {30, 40, 40, 50, 60, 65, 70};
 function_limits solar_receiver_limits = {40, 60, 60, 80, 100, 100, 120};
+output_limits flow_limits = {4, 8, 6, 12, 10, 16, 14, 20, 18, 22};
 
 /**
  * This method sets all membership degrees of all 
@@ -106,6 +107,20 @@ float getZShapeDistributionValue(float x, float a, float b){
 }
 
 /**
+ * This triangular shape distribution only applies for the categories
+ * low, medium and high since the other categories have different function shapes
+ * @param x value to search
+ * @param a lower bound
+ * @param b upper bound
+ * @returns the degrees of membership of the element in the specified range
+ */
+float getTriangularShapeDistributionValue(float x, float a, float b){
+  if (x > b) return 0;
+  if (x < a) return 0;
+  return 1 - (2*abs(x - (a + b)/2))/((float) b - a);
+}
+
+/**
  * @param temperature reference temperature
  * @param limits membership curves limits
  * @param m membership data struct
@@ -168,11 +183,15 @@ void setFuzzyMemberships() {
     solar_receiver_temperature_membership,
     SOLAR_RECEIVER_NORMAL_DISTRIBUTION_SIGMA
   );
+  
   if (!activateFlow()) {
-    
+    if (getPmpStatus())
+      stopDispensing();
     return;
   }
-  /*TODO: defuzzyfy send flow command to the pump*/
+
+  /* starts dispensing */
+  startConstantFlowrate(defuzzify());
 }
 
 /**
@@ -237,7 +256,12 @@ bool activateFlow(){
    * ***************************************************
    * ***************************************************
    */
-  /* If SRT is low but not very low AND ST is very_high, then flow is very low */
+  /**
+   * ***************************************************
+   * ********************* SRT LOW *********************
+   * ***************************************************
+   */
+  /* If SRT is low but not very low AND ST is very_high, then flow is medium */
    if (
     (temp = fuzzyAnd(
       solar_receiver_temperature_membership.low,
@@ -245,8 +269,33 @@ bool activateFlow(){
     )) >= 0
    ) {
     if (solar_receiver_temperature_membership.very_low == 0)
+      setMaxOfTwo(&flow_membership.medium, temp);
+  }
+  /* If SRT is low but not very low AND ST is high, then flow is low */
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.low,
+      seawater_temperature_membership.high
+    )) >= 0
+   ) {
+    if (solar_receiver_temperature_membership.very_low == 0)
+      setMaxOfTwo(&flow_membership.low, temp);
+  }
+  /* If SRT is low but not very low AND ST is medium, then flow is medium */
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.low,
+      seawater_temperature_membership.medium
+    )) >= 0
+   ) {
+    if (solar_receiver_temperature_membership.very_low == 0)
       setMaxOfTwo(&flow_membership.very_low, temp);
   }
+  /**
+   * **************************************************
+   * ******************* SRT MEDIUM *******************
+   * **************************************************
+   */
   /* If SRT is medium AND ST is very low, then flow is very low*/
   if (
     (temp = fuzzyAnd(
@@ -254,8 +303,7 @@ bool activateFlow(){
       seawater_temperature_membership.very_low
     )) >= 0
    ) {
-    if (solar_receiver_temperature_membership.very_low == 0)
-      setMaxOfTwo(&flow_membership.very_low, temp);
+    setMaxOfTwo(&flow_membership.very_low, temp);
   }
   /* If SRT is medium AND ST is low, then flow is low*/
   if (
@@ -266,26 +314,133 @@ bool activateFlow(){
    ) {
     setMaxOfTwo(&flow_membership.low, temp);
   }
-  /* If SRT is medium or High AND ST is low, then flow is medium*/
+  /* If SRT is medium AND ST is medium, then flow is medium*/
   if (
     (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.medium,
+      seawater_temperature_membership.medium
+    )) >= 0
+   ) {
+    setMaxOfTwo(&flow_membership.medium, temp);
+  }
+  /* If SRT is medium AND ST is very high, then flow is high*/
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.medium,
+      seawater_temperature_membership.very_high
+    )) >= 0
+   ) {
+    setMaxOfTwo(&flow_membership.high, temp);
+  }
+
+  /**
+   * **************************************************
+   * ******************** SRT HIGH ********************
+   * **************************************************
+   */
+
+  /* If SRT is high AND ST is very low, then flow is low*/
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.high,
+      seawater_temperature_membership.very_low
+    )) >= 0
+   ) {
+    setMaxOfTwo(&flow_membership.low, temp);
+  }
+  
+  /* If SRT is high AND ST is low, then flow is medium*/
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.high,
+      seawater_temperature_membership.low
+    )) >= 0
+   ) {
+    setMaxOfTwo(&flow_membership.medium, temp);
+  }
+
+  /* If SRT is high AND ST is medium, then flow is high*/
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.high,
+      seawater_temperature_membership.medium
+    )) >= 0
+   ) {
+    setMaxOfTwo(&flow_membership.high, temp);
+  }
+
+  /* If SRT is high AND ST is high OR very_high, then flow is very high*/
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.high,
       fuzzyOr(
-        solar_receiver_temperature_membership.medium,
-        solar_receiver_temperature_membership.high
-      ),
-      seawater_temperature_membership.low
+        seawater_temperature_membership.high,
+        seawater_temperature_membership.very_high
+      )
     )) >= 0
    ) {
-    setMaxOfTwo(&flow_membership.medium, temp);
+    setMaxOfTwo(&flow_membership.high, temp);
   }
-  /* If SRT is medium or High AND ST is low, then flow is medium*/
+
+  /**
+   * **************************************************
+   * ***************** SRT VERY HIGH ******************
+   * **************************************************
+   */
+
+   /* If SRT is very high AND ST is medium OR low, then flow is high*/
   if (
     (temp = fuzzyAnd(
-      solar_receiver_temperature_membership.medium
-      seawater_temperature_membership.low
+      solar_receiver_temperature_membership.high,
+      fuzzyOr(
+        seawater_temperature_membership.low,
+        seawater_temperature_membership.medium
+      )
     )) >= 0
    ) {
-    setMaxOfTwo(&flow_membership.medium, temp);
+    setMaxOfTwo(&flow_membership.high, temp);
   }
+
+  /* If SRT is very high AND ST is high OR very high, then flow is very high*/
+  if (
+    (temp = fuzzyAnd(
+      solar_receiver_temperature_membership.high,
+      fuzzyOr(
+        seawater_temperature_membership.high,
+        seawater_temperature_membership.very_high
+      )
+    )) >= 0
+   ) {
+    setMaxOfTwo(&flow_membership.very_high, temp);
+  }
+  
   return true;
+}
+
+/**
+ * This method converts the fuzzy output to a crisp value
+ */
+float defuzzify(){
+  float num = 0;
+  float den = 0;
+  float max_flow = getMaxFlow();
+
+  for (float x = MINIMUM_FLOW; x <= max_flow; x += 0.02){ // Usar un incremento pequeño para aproximar la integral
+    // Calculate membership
+    float s = maxOfAll(
+      5,
+      min(flow_membership.very_low, getZShapeDistributionValue(x, flow_limits.lower_limit_very_low, flow_limits.upper_limit_very_low)),
+      min(flow_membership.low, getTriangularShapeDistributionValue(x, flow_limits.lower_limit_low, flow_limits.upper_limit_low)),
+      min(flow_membership.medium, getTriangularShapeDistributionValue(x, flow_limits.lower_limit_medium, flow_limits.upper_limit_medium)),
+      min(flow_membership.high, getTriangularShapeDistributionValue(x, flow_limits.lower_limit_high, flow_limits.upper_limit_high)),
+      min(flow_membership.very_high, getSShapeDistributionValue(x, flow_limits.lower_limit_very_high, flow_limits.upper_limit_very_high))
+    );
+    // Integral
+    num += x * s;
+    den += s;
+  }
+  // return centroid
+  if (den > 0)
+    return num / den;
+  return 0.0;
 }

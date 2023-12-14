@@ -15,11 +15,11 @@ enum DISTRIBUTION_SIGMA {
  * categories.
  */
 typedef struct membership_degrees {
-  int very_low;
-  int low;
-  int medium;
-  int high;
-  int very_high;
+  float very_low;
+  float low;
+  float medium;
+  float high;
+  float very_high;
 } membership;
 
 /**
@@ -35,9 +35,24 @@ typedef struct function_limits {
   int upper_limit_very_high;
 } function_limits;
 
+typedef struct output_limits {
+  int lower_limit_very_low;
+  int upper_limit_very_low;
+  int lower_limit_low;
+  int upper_limit_low;
+  int lower_limit_medium;
+  int upper_limit_medium;
+  int lower_limit_high;
+  int upper_limit_high;
+  int lower_limit_very_high;
+  int upper_limit_very_high;
+} output_limits;
+
 
 float getNormalDistributionValue(float, float, enum DISTRIBUTION_SIGMA);
 void setMembership(float, struct function_limits, struct membership_degrees, enum DISTRIBUTION_SIGMA);
 void setMaxOfTwo(float *, float);
+float defuzzify();
+float maxOfAll(float ...);
 
 #endif

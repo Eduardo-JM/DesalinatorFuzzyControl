@@ -1,0 +1,1 @@
+float maxOfAll(int numArgs, ...);

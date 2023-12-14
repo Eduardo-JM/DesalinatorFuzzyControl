@@ -1,9 +1,3 @@
-#define SEA_WATER_LEVEL_SENSOR_PIN 5
-#define CONDENSED_WATER_LEVEL_SENSOR_PIN 6
-
-#define SEA_WATER_LEVEL_SENSOR_RELAY_PIN 7
-#define CONDENSED_WATER_LEVEL_SENSOR_RELAY_PIN 8
-
 /**
  * This method sets the pin modes' used for the control
  * of water supply to the system
@@ -37,4 +31,12 @@ void activateRelay (int relay_pin) {
  */
 void deactivateRelay (int relay_pin) {
   digitalWrite(relay_pin, LOW);
+}
+
+void fillSeawaterIfNecessary(){
+  if (isSensorActive(SEA_WATER_LEVEL_SENSOR_PIN)) {
+    deactivateRelay(SEA_WATER_LEVEL_SENSOR_RELAY_PIN);
+    return;
+  }
+  activateRelay(SEA_WATER_LEVEL_SENSOR_RELAY_PIN);
 }

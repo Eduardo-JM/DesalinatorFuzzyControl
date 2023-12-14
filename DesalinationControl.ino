@@ -1,9 +1,12 @@
 // Code tested for Arduino Mega
 #include <math.h>
+#include <stdarg.h>
 #include "max6675.h"
 #include "temperature_sensor.h"
 #include "fuzzy_control.h"
 #include "ezo_pmp_control.h"
+#include "utils.h"
+#include "water_level_sensor.h"
 
 void setup() {
   Serial.begin(9600);
@@ -15,5 +18,7 @@ void setup() {
 }
 
 void loop () {
+  //fillSeawaterIfNecessary();
   setFuzzyMemberships();
+  delay(1000);
 }

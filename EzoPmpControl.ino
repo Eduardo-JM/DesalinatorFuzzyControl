@@ -4,6 +4,7 @@ String pump_response = "";
 boolean response_complete = false;
 boolean is_flowing = false;
 float ml;
+float max_flowrate = 105.0;
 
 
 /**
@@ -13,6 +14,11 @@ float ml;
 void initPumpControl(){
   input_command.reserve(10);
   pump_response.reserve(30);
+  max_flowrate = getMaxFlow();
+  if (max_flowrate < MIN_FLOW_RATE)
+    Serial.println("ERROR ENCOUNTERED WHILE SETTING MAX FLOWRATE. MAX FLOW RATE CAN NOT BE LESS THAN MIN FLOW RATE");
+    
+  executeEzoPmpCommand("L,0");
 }
 
 /**
@@ -24,7 +30,6 @@ void initPumpControl(){
  */
 void serialEvent3() {
   pump_response = Serial3.readStringUntil(CARRIAGE_RETURN);
-  Serial.println(pump_response);
   response_complete = true;
 }
 
@@ -52,6 +57,45 @@ void handleEzoPmpCommand() {
   response_complete = false;
 }
 
+/**
+ * @returns true if pump is dispensing, false otherwise
+ */
 bool getPmpStatus(){
+  executeEzoPmpCommand("D,?");
+  delay(50);
+  if (response_complete)
+    return pump_response.indexOf("1") >= 0;
   return false;
+}
+
+/**
+ * When executed, the pump stop dispensing
+ */
+void stopDispensing() {
+  executeEzoPmpCommand("X");
+}
+
+void startConstantFlowrate(float ml_per_min){
+  if (ml_per_min < MIN_FLOW_RATE) {
+    stopDispensing();
+    return;
+  }
+  if (ml_per_min > max_flowrate){
+    stopDispensing();
+    return;
+  }
+  
+  String value2dispense = String(ml_per_min, 1);
+  String command = "DC,";
+  command.concat(value2dispense);
+  command.concat(",*");
+  executeEzoPmpCommand(command);
+}
+
+float getMaxFlow(){
+  executeEzoPmpCommand("DC,?");
+  String valueStr = pump_response.substring(pump_response.indexOf(',') + 1);
+  if (isdigit(valueStr[0]) || valueStr[0]== '-')
+    return valueStr.toFloat();
+  return 0.0;
 }
