@@ -19,7 +19,7 @@ membership flow_membership;
 function_limits seawater_limits = {5, 10, 13, 20, 27, 30, 35};
 function_limits heated_seawater_limits = {30, 40, 40, 50, 60, 65, 70};
 function_limits solar_receiver_limits = {40, 60, 60, 80, 100, 100, 120};
-output_limits flow_limits = {4, 8, 6, 12, 10, 16, 14, 20, 18, 22};
+output_limits flow_limits = {5, 8, 6, 10, 8, 12, 10, 14, 12, 15};
 
 /**
  * This method sets all membership degrees of all 
