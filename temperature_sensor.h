@@ -26,9 +26,7 @@ enum TEMPERATURE_SENSOR {
   SOLAR_RECEIVER_TEMPERATURE_SENSOR
 };
 
-/**
- * This method reads the temperature for the selected sensor
-*/
+void initTemperatureSensors();
 float readTemperature(enum TEMPERATURE_SENSOR);
 float readThermistorTemperature(int);
 float readThermocoupleTemperature(MAX6675);

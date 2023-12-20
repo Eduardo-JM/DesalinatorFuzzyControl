@@ -11,7 +11,8 @@
 void setup() {
   Serial.begin(9600);
   Serial3.begin(9600);
-  
+
+  initTemperatureSensors();
   //initLevelSensors();
   //initPumpControl();
   //initFuzzyControl();
@@ -20,6 +21,6 @@ void setup() {
 void loop () {
   //fillSeawaterIfNecessary();
   //setFuzzyMemberships();
-  //Serial.println(String(readTemperature(SEAWATER_TEMPERATURE_SENSOR)));
-  //delay(1000);
+  Serial.println(String(readTemperature(SOLAR_RECEIVER_TEMPERATURE_SENSOR)));
+  delay(1000);
 }
